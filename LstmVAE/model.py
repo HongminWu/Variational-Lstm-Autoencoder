@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import six
 from timeit import default_timer as timer
-
+import ipdb
 
 class LSTM_Var_Autoencoder(object):
 
@@ -185,7 +185,7 @@ class LSTM_Var_Autoencoder(object):
             grad_clip_norm=10,
             optimizer_params=None,
             verbose=True):      
-        
+
         if len(np.shape(X)) != 3:
             raise ValueError(
                 'Input must be a 3-D array. I could reshape it for you, but I am too lazy.'
