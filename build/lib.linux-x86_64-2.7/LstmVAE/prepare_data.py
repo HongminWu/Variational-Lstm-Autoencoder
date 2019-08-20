@@ -7,10 +7,12 @@ Created on Wed Apr 18 14:45:14 2018
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
+
 def preprocess(df):
     
     """returns normalized and standardized data.
     """
+    
     df = np.asarray(df, dtype=np.float32)
     
     if len(df.shape) == 1:
