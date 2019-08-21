@@ -6,19 +6,30 @@ from LstmVAE import preprocess
 import pandas as pd
 import numpy as np
 import ipdb
+import matplotlib.pyplot as plt
 
-nrows, ncols = 1000, 2
-data = np.random.random((nrows, ncols))
+data_path = "/home/hongminwu/baxter_ws/src/SPAI/smach_based_introspection_framework/introspection_data_folder.AC_offline_test/temp_folder_prediction_for_error_prevention_wrench_norm/anomaly_detection_feature_selection_folder/No.0 filtering scheme/whole_experiment/experiment_at_2018y05m19d15H46M44S/experiment_at_2018y05m19d15H46M44S.csv"
 
-df = pd.DataFrame(data=data)
+df = pd.read_csv(data_path, header=0, index_col=0)
+print (df.shape)
+n_obs, n_dim = df.shape[0], df.shape[1]
+# n_obs, n_dim = 1000, 2
+# data = np.random.random((n_obs, n_dim))
+
 df = preprocess(df)  #return standardized and normalized df, check NaN values replacing it with 0
 
-timesteps, n_dim = 5, ncols
+timesteps = 1
 df = df.reshape(-1,timesteps, n_dim) #use 3D input, n_dim = 1 for 1D time series.
 
+'''
+    intermediate_dim : LSTM cells dimension.
+    z_dim : dimension of latent space.
+    n_dim : dimension of input data.
+    statefull : if true, keep cell state through batches.
+'''
 vae = LSTM_Var_Autoencoder(intermediate_dim = 15, z_dim = 3, n_dim= n_dim, stateful = True) #default stateful = False
 
-vae.fit(df, learning_rate=0.001, batch_size = 100, num_epochs = 200, opt = tf.train.AdamOptimizer, REG_LAMBDA = 0.01,
+vae.fit(df, learning_rate=0.001, batch_size = 50, num_epochs = 2000, opt = tf.train.AdamOptimizer, REG_LAMBDA = 0.01,
                     grad_clip_norm=10, optimizer_params=None, verbose = True)
 
 """
@@ -29,4 +40,11 @@ vae.fit(df, learning_rate=0.001, batch_size = 100, num_epochs = 200, opt = tf.tr
 x_reconstructed, recons_error = vae.reconstruct(df, get_error = True) #returns squared error
 
 x_reduced = vae.reduce(df) #latent space representation
-ipdb.set_trace()
+
+#--------------plot----------------------------
+fig, axarr = plt.subplots(nrows = 1, ncols=2)
+axarr[0].plot(df.reshape(n_obs, n_dim), c = 'black')
+axarr[0].plot(x_reconstructed.reshape(n_obs, n_dim), c = 'blue')
+axarr[1].plot(recons_error.reshape(n_obs, n_dim), c='r', label='error')
+plt.legend()
+plt.show()
